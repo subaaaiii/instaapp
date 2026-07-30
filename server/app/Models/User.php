@@ -13,9 +13,13 @@ use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'username', 'email', 'password', 'profile_image',])]
 #[Hidden(['password', 'remember_token'])]
+/**
+ * @mixin \Laravel\Sanctum\HasApiTokens
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
+    
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -33,5 +37,14 @@ class User extends Authenticatable
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+    public function likedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')
+            ->withTimestamps();
+    }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

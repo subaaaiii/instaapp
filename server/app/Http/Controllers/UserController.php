@@ -23,6 +23,7 @@ class UserController extends Controller
 
         return response()->json(
             $user->posts()
+                ->withCount(['likes','comments'])
                 ->latest()
                 ->get()
         );

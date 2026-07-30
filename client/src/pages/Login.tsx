@@ -71,7 +71,7 @@ export default function LoginPage() {
               </div>
 
               <button
-                className="w-full text-white bg-blue-600 hover:bg-blue-700 rounded-lg px-5 py-2.5 font-medium"
+                className="w-full text-white bg-yellow-600 hover:bg-yellow-700 rounded-lg px-5 py-2.5 font-medium"
                 type="submit"
                 disabled={login.isPending}
               >
@@ -82,7 +82,7 @@ export default function LoginPage() {
                 Don&apos;t have an account yet?{" "}
                 <Link
                   to="/register"
-                  className="font-medium text-blue-600 hover:underline"
+                  className="font-medium text-yellow-600 hover:underline"
                 >
                   Sign up
                 </Link>

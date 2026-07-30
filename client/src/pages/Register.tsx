@@ -77,16 +77,12 @@ export default function Register() {
                 />
 
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.name[0]}
-                  </p>
+                  <p className="mt-1 text-sm text-red-500">{errors.name[0]}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Email
-                </label>
+                <label className="mb-2 block text-sm font-medium">Email</label>
 
                 <input
                   type="email"
@@ -98,9 +94,7 @@ export default function Register() {
                 />
 
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.email[0]}
-                  </p>
+                  <p className="mt-1 text-sm text-red-500">{errors.email[0]}</p>
                 )}
               </div>
 
@@ -133,9 +127,7 @@ export default function Register() {
                 <input
                   type="password"
                   value={passwordConfirmation}
-                  onChange={(e) =>
-                    setPasswordConfirmation(e.target.value)
-                  }
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
                   className={`w-full rounded-lg border p-2.5 ${
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
@@ -144,15 +136,17 @@ export default function Register() {
 
               {register.isError && (
                 <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                  {(register.error as AxiosError<ValidationErrors>).response
-                    ?.data?.message}
+                  {
+                    (register.error as AxiosError<ValidationErrors>).response
+                      ?.data?.message
+                  }
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={register.isPending}
-                className="w-full rounded-lg bg-blue-600 py-2.5 text-white hover:bg-blue-700 disabled:opacity-50"
+                className="w-full rounded-lg bg-yellow-600 py-2.5 text-white hover:bg-yellow-700 disabled:opacity-50"
               >
                 {register.isPending
                   ? "Creating account..."
@@ -163,7 +157,7 @@ export default function Register() {
                 Already have an account?{" "}
                 <Link
                   to="/"
-                  className="font-medium text-blue-600 hover:underline"
+                  className="font-medium text-yellow-600 hover:underline"
                 >
                   Login here
                 </Link>

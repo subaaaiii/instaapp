@@ -6,7 +6,7 @@ type PostImageProps = {
 
 export default function PostImage({ image }: PostImageProps) {
   return (
-    <div className="w-full h-80 md:h-[560px] overflow-hidden">
+    <div className="w-full aspect-[4/5] overflow-hidden">
       <img
         src={storageUrl(image)}
         alt="Post"

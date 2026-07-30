@@ -11,7 +11,7 @@ import PostContent from "../components/PostContent";
 import { useNavigate } from "react-router-dom";
 import ProfilePhoto from "../components/ProfilePhoto";
 import Modal from "../components/Modal";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DetaiModal from "../components/DetailModal";
 import CreatePostModal from "./CreatePostModal";
 import { usePosts } from "../hooks/Post/usePosts";
@@ -21,12 +21,14 @@ import { timeAgo } from "../helpers/timeAgo";
 import { useLogout } from "../hooks/Auth/useLogout";
 import { useUsersSuggestion } from "../hooks/User/useUsersSuggestion";
 import FullPageLoader from "../components/Loader";
+import { useToggleLike } from "../hooks/Like/useToggleLike";
 
 const Home = () => {
   // const { data: posts, isPending, isError } = usePosts();
   // const { data: me } = useMe();
   // const {data :suggest} = useUsersSuggestion();
   const logout = useLogout();
+  const toggleLike = useToggleLike();
 
   const [open, setOpen] = useState(false);
   const [detailPost, setDetailPost] = useState<number | null>(null);
@@ -36,11 +38,26 @@ const Home = () => {
   const { data: me, isPending: meLoading } = useMe();
   const { data: suggest, isPending: suggestLoading } = useUsersSuggestion();
 
-  // useEffect(() => {
-  //   console.log(posts);
-  // }, []);
-  // console.log(posts);
+  useEffect(() => {
+    console.log(posts);
+  }, []);
+  console.log(posts);
   const navigate = useNavigate();
+
+  const [openMenu, setOpenMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (isPending || meLoading || suggestLoading) {
     return <FullPageLoader />;
@@ -50,28 +67,49 @@ const Home = () => {
     return <div>Failed to load posts.</div>;
   }
   return (
-    <div className="max-w-6xl mx-auto pb-40">
+    <div className="max-w-6xl mx-auto pb-40 ">
       <div className="grid grid-cols-8">
-        <div className="col-span-5 flex flex-col px-30">
-          <div className="sticky top-0 z-50 flex items-center justify-between border-b border-gray-200 bg-white py-4">
+        <div className="col-span-8 md:col-span-5 px-2 xl:px-0 flex flex-col ">
+          <div className="sticky px-4 rounded-md top-0 shadow-[0_1px_3px_rgba(0,0,0,0.08)] z-50 flex items-center justify-between border-b border-gray-200 bg-white py-4">
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate("/profile")}
-                className="h-12 w-12 overflow-hidden rounded-full"
-              >
-                <ProfilePhoto image={me?.profile_image} />
-              </button>
+              <div className="relative block md:hidden" ref={menuRef}>
+                <button
+                  onClick={() => setOpenMenu((prev) => !prev)}
+                  className="h-12 w-12"
+                >
+                  <ProfilePhoto image={me?.profile_image} />
+                </button>
 
+                {openMenu && (
+                  <div className="absolute -right-40 mt-2 w-48 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
+                    <button
+                      onClick={() => {
+                        navigate("/profile");
+                        setOpenMenu(false);
+                      }}
+                      className="w-full px-4 py-3 text-left transition hover:bg-gray-100"
+                    >
+                      Go to Profile
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        logout.mutate();
+                        setOpenMenu(false);
+                      }}
+                      className="w-full px-4 py-3 text-left text-red-600 transition hover:bg-red-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
               <div>
-                <p className="text-sm text-gray-500">
-                  Welcome back{" "}
-                  <span className="font-semibold">{me?.name} !</span>
-                </p>
+                <p className="text-lg font-semibold">For your page</p>
               </div>
             </div>
-
             <button
-              className="rounded-full p-2 transition hover:bg-gray-100"
+              className="rounded-full bg-yellow-500 p-2 transition hover:bg-yellow-400"
               aria-label="Create post"
               onClick={() => setOpenCreate(true)}
             >
@@ -83,56 +121,74 @@ const Home = () => {
               </div>
             </Modal>
           </div>
-          {posts?.map((post: any) => (
-            <div key={post?.id}>
-              <div className="pt-10 pb-4 px-4 flex justify-between">
-                <div className="flex gap-2 items-center">
-                  <div className="w-12 h-12">
-                    <ProfilePhoto image={post?.user?.profile_image} />
+          <div className="grid xl:grid-cols-2 gap-6">
+            {posts?.map((post: any) => (
+              <div key={post?.id} className="shadow-md mt-6 rounded-b-md">
+                <div className="p-4 flex justify-between rounded-t-md border border-gray-200 ">
+                  <div className="flex gap-2 items-center ">
+                    <div className="w-12 h-12">
+                      <ProfilePhoto image={post?.user?.profile_image} onClick={() => navigate(`/profile/${post?.user.username}`)} />
+                    </div>
+                    <div className="font-semibold">{post?.user.username}</div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                    <div>{timeAgo(post?.created_at)}</div>
                   </div>
-                  <div className="font-semibold">{post?.user.name}</div>
-                  <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                  <div>{timeAgo(post?.created_at)}</div>
                 </div>
-              </div>
-              <div className="rounded-md overflow-hidden">
-                <PostImage image={post?.image} />
-              </div>
-              <div className="flex justify-between mt-4 px-2">
-                <div className="flex gap-6 items-center">
-                  <Heart size={32} />
-                  <button
-                    onClick={() => {
-                      setOpen(true);
-                      setDetailPost(post.id);
-                    }}
-                  >
-                    <MessageCircle size={28} />
-                  </button>
-                  <Repeat size={28} />
-                  <Send size={28} />
+                <div className="overflow-hidden border border-gray-200">
+                  <PostImage image={post?.image} />
                 </div>
-                <div>
-                  <Bookmark size={30} />
+                <div className="flex justify-between mt-4 px-2">
+                  <div className="flex gap-4 items-center">
+                    <div className="flex gap-1 items-center">
+                      <Heart
+                        size={32}
+                        fill={post.is_liked ? "currentColor" : "none"}
+                        className={`cursor-pointer transition ${
+                          post.is_liked ? "text-red-500" : "hover:text-red-500"
+                        }`}
+                        onClick={() => toggleLike.mutate(post.id)}
+                      />
+                      {post?.likes_count > 0 && <div>{post?.likes_count}</div>}
+                    </div>
+                    <div className="flex gap-1 items-center">
+                      <button
+                        onClick={() => {
+                          setOpen(true);
+                          setDetailPost(post.id);
+                        }}
+                      >
+                        <MessageCircle size={28} />
+                      </button>
+                      {post?.comments_count > 0 && (
+                        <div>{post?.comments_count}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Bookmark size={30} />
+                  </div>
                 </div>
-              </div>
 
-              <div className="mt-2 px-2">
-                Liked by <span className="font-semibold">Sahrul</span> and
-                others
+                <div className="mt-2 px-2">
+                  Liked by <span className="font-semibold">Sahrul</span> and
+                  others
+                </div>
+                <div className="p-2">
+                  <PostContent
+                    caption={post?.caption}
+                    user={post?.user.username}
+                  />
+                </div>
               </div>
-              <div className="p-2">
-                <PostContent caption={post.caption} />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
           <Modal open={open} onClose={() => setOpen(false)}>
             <div className="">
               <DetaiModal id={detailPost!} />
             </div>
           </Modal>
         </div>
-        <div className="col-span-3 flex flex-col px-10 pt-10">
+        <div className="hidden md:block col-span-3 flex flex-col px-10 pt-10">
           <div className="flex justify-between items-center">
             <div className="flex gap-2">
               <div className="w-12 h-12">
@@ -171,14 +227,14 @@ const Home = () => {
                 </div>
                 <div className="flex flex-col">
                   <div className="font-semibold cursor-pointer">
-                    {user?.name}
+                    {user?.username}
                   </div>
                   <div className="font-light">Suggested for you</div>
                 </div>
               </div>
               <div
                 onClick={() => navigate(`/profile/${user?.username}`)}
-                className="text-blue-700 text-sm hover:underline cursor-pointer"
+                className="hidden xl:block text-blue-700 text-sm hover:underline cursor-pointer"
               >
                 Go to profile
               </div>

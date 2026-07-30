@@ -12,7 +12,17 @@ class PostController extends Controller
 {
     public function index()
     {
+        $userId = Auth::id();
         return Post::with('user')
+            ->withCount([
+                'likes',
+                'comments'
+            ])
+            ->withExists([
+                'likes as is_liked' => function ($query) use ($userId) {
+                    $query->where('users.id', $userId);
+                }
+            ])
             ->latest()
             ->get();
     }
@@ -36,9 +46,21 @@ class PostController extends Controller
         return response()->json($post, 201);
     }
 
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
-        return $post->load('user');
+        $userId = $request->user()?->id;
+
+        $post->load('user')
+            ->loadCount([
+                'likes',
+                'comments'
+            ]);
+
+        $post->is_liked = $userId
+            ? $post->likes()->where('users.id', $userId)->exists()
+            : false;
+
+        return response()->json($post);
     }
 
     public function update(Request $request, Post $post)

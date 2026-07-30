@@ -1,4 +1,4 @@
-import { Camera, Heart, MessageCircle } from "lucide-react";
+import { Camera, Ellipse, EllipsisVertical, Heart, MessageCircle, Pencil, Trash2 } from "lucide-react";
 import ProfilePhoto from "../components/ProfilePhoto";
 import { useMe } from "../hooks/Auth/useMe";
 import { useChangeProfileImage } from "../hooks/Auth/useChangeProfileImage";
@@ -9,6 +9,9 @@ import DetaiModal from "../components/DetailModal";
 import { storageUrl } from "../helpers/storageUrl";
 import { useParams } from "react-router-dom";
 import { useUser } from "../hooks/User/useUser";
+import CreatePostModal from "./CreatePostModal";
+import { useDeletePost } from "../hooks/Post/useDeletePost";
+import Swal from "sweetalert2";
 
 const Profile = () => {
   const { username } = useParams();
@@ -16,8 +19,11 @@ const Profile = () => {
 
   const isMyProfile = !username || username === me?.username;
   const { data: profile } = isMyProfile ? useMe() : useUser(username!);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
 
   const changeProfileImage = useChangeProfileImage();
+  const deletePost = useDeletePost();
 
   const handleChangeProfileImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -27,24 +33,57 @@ const Profile = () => {
     const formData = new FormData();
     formData.append("profile_image", file);
 
-    changeProfileImage.mutate(formData);
+    changeProfileImage.mutate(formData, {
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "profile photo changed",
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        });
+      },
+    });
+  };
+
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      title: "Delete post?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#dc2626",
+    });
+
+    if (!result.isConfirmed) return;
+
+    deletePost.mutate(id, {
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "Post deleted",
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        });
+      },
+    });
   };
 
   const [open, setOpen] = useState(false);
   const [detailPost, setDetailPost] = useState<number | null>(null);
   const { data: userPosts } = useUserPosts(profile?.username);
-  // if (isPending) {
-  //   return <div>Loading...</div>;
-  // }
-
-  // if (isError) {
-  //   return <div>Failed to load posts.</div>;
-  // }
   console.log(profile);
   return (
-    <div className="max-w-5xl mx-auto">
-      <div className="px-30">
-        <div className="grid grid-cols-4">
+    <div className="max-w-5xl mx-auto ">
+      <div className="md:px-30">
+        <div className="grid grid-cols-4 items-center  ">
           <div className="col-span-1 flex justify-center p-4">
             <div className="relative w-52">
               <div className="aspect-square overflow-hidden rounded-full">
@@ -89,8 +128,8 @@ const Profile = () => {
         </div>
       </div>
       {userPosts && userPosts.length > 0 ? (
-        <div className="grid grid-cols-3 gap-1 mt-6 overflow-hidden rounded-md">
-          {userPosts.map((post: any) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1 mt-6 overflow-hidden rounded-md px-4 xl:px-0 justify-center">
+          {userPosts?.map((post: any) => (
             <div
               key={post.id}
               onClick={() => {
@@ -100,26 +139,100 @@ const Profile = () => {
               className="group relative aspect-[4/5] cursor-pointer overflow-hidden"
             >
               <img
-                src={storageUrl(post.image)}
+                src={storageUrl(post?.image)}
                 alt="post"
                 className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              {isMyProfile && (
+                  <div className="absolute md:hidden top-3 right-3 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingPost(post);
+                        setOpenEdit(true);
+                      }}
+                      className="rounded-full bg-white/20 p-2 text-white backdrop-blur hover:bg-white/30"
+                    >
+                      <Pencil size={18} />
+                    </button>
 
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                <div className="flex items-center gap-8 font-semibold text-white">
-                  <div className="flex items-center gap-2">
-                    <Heart size={22} fill="currentColor" />
-                    <span>1.2k</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(post.id);
+                      }}
+                      disabled={deletePost.isPending}
+                      className="rounded-full bg-red-500/80 p-2 text-white hover:bg-red-600 disabled:opacity-50"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
+                )}
 
-                  <div className="flex items-center gap-2">
-                    <MessageCircle size={22} fill="currentColor" />
-                    <span>245</span>
+              <div className="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                {isMyProfile && (
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingPost(post);
+                        setOpenEdit(true);
+                      }}
+                      className="rounded-full bg-white/20 p-2 text-white backdrop-blur hover:bg-white/30"
+                    >
+                      <Pencil size={18} />
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(post.id);
+                      }}
+                      disabled={deletePost.isPending}
+                      className="rounded-full bg-red-500/80 p-2 text-white hover:bg-red-600 disabled:opacity-50"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex h-full items-center justify-center">
+                  <div className="flex items-center gap-8 font-semibold text-white">
+                    <div className="flex items-center gap-2">
+                      <Heart size={22} fill="currentColor" />
+                      <span>{post.likes_count}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <MessageCircle size={22} fill="currentColor" />
+                      <span>{post.comments_count}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           ))}
+          <Modal
+            open={openEdit}
+            onClose={() => {
+              setOpenEdit(false);
+              setEditingPost(null);
+            }}
+          >
+            {editingPost && (
+              <CreatePostModal
+                post={{
+                  id: editingPost.id,
+                  caption: editingPost.caption,
+                  image: editingPost.image,
+                }}
+                onSuccess={() => {
+                  setOpenEdit(false);
+                  setEditingPost(null);
+                }}
+              />
+            )}
+          </Modal>
         </div>
       ) : (
         <div className="mt-20 flex flex-col items-center justify-center text-center">
