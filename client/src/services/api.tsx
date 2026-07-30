@@ -1,23 +1,24 @@
 import axios from "axios";
 
 const Api = axios.create({
-    baseURL: "http://127.0.0.1:8000/api",
-    headers: {
-        Accept: "application/json",
-    },
+  baseURL: "http://127.0.0.1:8000/api",
+  headers: {
+    Accept: "application/json",
+  },
 });
 
 Api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("token");
+  (config) => {
+    const token = localStorage.getItem("token");
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+    const isPublicRoute = config.url === "/" || config.url === "/register";
 
-        return config;
-    },
-    (error) => Promise.reject(error)
+    if (token && !isPublicRoute) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
 );
 
 Api.interceptors.response.use(
@@ -31,6 +32,6 @@ Api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
-export default Api
+export default Api;
