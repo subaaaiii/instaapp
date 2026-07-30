@@ -1,11 +1,15 @@
+import ImageDefault from "../assets/defaultProfile.jpg"
+import { storageUrl } from "../helpers/storageUrl";
+
 type ProfileProps = {
   onClick?: () => void;
+  image: string;
 };
-export default function ProfilePhoto({onClick}:ProfileProps) {
+export default function ProfilePhoto({onClick, image}:ProfileProps) {
   return (
     <div onClick={onClick} className="w-full h-full overflow-hidden rounded-full border border-gray-200 cursor-pointer">
       <img
-        src="https://flowbite.s3.amazonaws.com/docs/gallery/square/image-4.jpg"
+        src={image?.trim() ? `${storageUrl(image)}` : ImageDefault}
         alt="Profile"
         className="w-full h-full object-cover"
       />

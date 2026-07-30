@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Api from "../../services/api";
 
 interface RegisterPayload {
+  username: string;
   name: string;
   email: string;
   password: string;

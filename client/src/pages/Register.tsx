@@ -1,19 +1,31 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { AxiosError } from "axios";
 import { useRegister } from "../hooks/Auth/useRegister";
+
+type ValidationErrors = {
+  message: string;
+  errors: Record<string, string[]>;
+};
 
 export default function Register() {
   const register = useRegister();
 
   const [name, setName] = useState("");
+  const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+
+  const errors =
+    (register.error as AxiosError<ValidationErrors>)?.response?.data?.errors ??
+    {};
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     register.mutate({
+      username,
       name,
       email,
       password,
@@ -22,105 +34,120 @@ export default function Register() {
   };
 
   return (
-    <section className="bg-gray-50 min-h-screen">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto h-screen">
-        <Link
-          to="/"
-          className="flex items-center mb-6 text-2xl font-semibold text-gray-900"
-        >
-          <img
-            className="w-8 h-8 mr-2"
-            src="https://flowbite.s3.amazonaws.com/blocks/marketing-ui/logo.svg"
-            alt="logo"
-          />
-          Flowbite
-        </Link>
-
-        <div className="w-full bg-white rounded-lg shadow sm:max-w-md">
+    <section className="min-h-screen bg-gray-50">
+      <div className="mx-auto flex h-screen max-w-md items-center justify-center px-6">
+        <div className="w-full rounded-lg bg-white shadow">
           <div className="p-8">
-            <h1 className="text-2xl font-bold mb-6">
-              Create an account
-            </h1>
+            <h1 className="mb-6 text-2xl font-bold">Create an account</h1>
 
-            <form
-              className="space-y-4"
-              onSubmit={handleSubmit}
-            >
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label
-                  htmlFor="name"
-                  className="block mb-2 text-sm font-medium"
-                >
+                <label className="mb-2 block text-sm font-medium">
+                  Username
+                </label>
+
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUserName(e.target.value)}
+                  className={`w-full rounded-lg border p-2.5 ${
+                    errors.username ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+
+                {errors.username && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.username[0]}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">
                   Full Name
                 </label>
 
                 <input
-                  id="name"
                   type="text"
-                  placeholder="John Doe"
-                  className="w-full rounded-lg border p-2.5"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
+                  className={`w-full rounded-lg border p-2.5 ${
+                    errors.name ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.name[0]}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label
-                  htmlFor="email"
-                  className="block mb-2 text-sm font-medium"
-                >
+                <label className="mb-2 block text-sm font-medium">
                   Email
                 </label>
 
                 <input
-                  id="email"
                   type="email"
-                  placeholder="name@example.com"
-                  className="w-full rounded-lg border p-2.5"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  className={`w-full rounded-lg border p-2.5 ${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.email[0]}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block mb-2 text-sm font-medium"
-                >
+                <label className="mb-2 block text-sm font-medium">
                   Password
                 </label>
 
                 <input
-                  id="password"
                   type="password"
-                  className="w-full rounded-lg border p-2.5"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  className={`w-full rounded-lg border p-2.5 ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.password[0]}
+                  </p>
+                )}
               </div>
 
               <div>
-                <label
-                  htmlFor="password_confirmation"
-                  className="block mb-2 text-sm font-medium"
-                >
+                <label className="mb-2 block text-sm font-medium">
                   Confirm Password
                 </label>
 
                 <input
-                  id="password_confirmation"
                   type="password"
-                  className="w-full rounded-lg border p-2.5"
                   value={passwordConfirmation}
                   onChange={(e) =>
                     setPasswordConfirmation(e.target.value)
                   }
-                  required
+                  className={`w-full rounded-lg border p-2.5 ${
+                    errors.password ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
               </div>
+
+              {register.isError && (
+                <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                  {(register.error as AxiosError<ValidationErrors>).response
+                    ?.data?.message}
+                </div>
+              )}
 
               <button
                 type="submit"

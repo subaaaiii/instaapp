@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-export default function PostContent() {
+type CreatePostData = {
+  caption: string;
+};
+
+export default function PostContent({caption}:CreatePostData) {
   const [expanded, setExpanded] = useState(false);
 
   const text = `🌱 WE ARE HIRING: PROGRAMMER! 🌱
@@ -59,7 +63,7 @@ s.kemenlh.go.id/technical-test-pdluk
         }`}
       >
         <span className="font-semibold">Subairi </span>
-        {text}
+        {caption}
       </p>
 
       <button

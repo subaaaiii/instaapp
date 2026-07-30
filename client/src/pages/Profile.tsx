@@ -1,73 +1,146 @@
-import { Heart, Images, MessageCircle } from "lucide-react";
+import { Camera, Heart, MessageCircle } from "lucide-react";
 import ProfilePhoto from "../components/ProfilePhoto";
+import { useMe } from "../hooks/Auth/useMe";
+import { useChangeProfileImage } from "../hooks/Auth/useChangeProfileImage";
+import { useUserPosts } from "../hooks/Post/useUserPost";
+import Modal from "../components/Modal";
+import { useState } from "react";
+import DetaiModal from "../components/DetailModal";
+import { storageUrl } from "../helpers/storageUrl";
+import { useParams } from "react-router-dom";
+import { useUser } from "../hooks/User/useUser";
 
 const Profile = () => {
-  const image =
-    "https://flowbite.s3.amazonaws.com/docs/gallery/square/image.jpg";
+  const { username } = useParams();
+  const { data: me } = useMe();
+
+  const isMyProfile = !username || username === me?.username;
+  const { data: profile } = isMyProfile ? useMe() : useUser(username!);
+
+  const changeProfileImage = useChangeProfileImage();
+
+  const handleChangeProfileImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("profile_image", file);
+
+    changeProfileImage.mutate(formData);
+  };
+
+  const [open, setOpen] = useState(false);
+  const [detailPost, setDetailPost] = useState<number | null>(null);
+  const { data: userPosts } = useUserPosts(profile?.username);
+  // if (isPending) {
+  //   return <div>Loading...</div>;
+  // }
+
+  // if (isError) {
+  //   return <div>Failed to load posts.</div>;
+  // }
+  console.log(profile);
   return (
     <div className="max-w-5xl mx-auto">
       <div className="px-30">
         <div className="grid grid-cols-4">
-          <div className="col-span-1 p-4">
-            <div className="w-full aspect-square">
-              <ProfilePhoto />
+          <div className="col-span-1 flex justify-center p-4">
+            <div className="relative w-52">
+              <div className="aspect-square overflow-hidden rounded-full">
+                <ProfilePhoto image={profile?.profile_image} />
+              </div>
+              {isMyProfile && (
+                <label className="absolute bottom-2 right-2 cursor-pointer rounded-full bg-white p-2 shadow hover:bg-gray-100">
+                  <Camera size={18} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleChangeProfileImage}
+                  />
+                </label>
+              )}
             </div>
           </div>
-          <div className="col-span-3 p-4 flex flex-col  space-y-3">
-            <div className="font-bold text-2xl">subaaaiii</div>
-            <div className="text-lg">subairi</div>
-            <div className="flex gap-4 ">
+
+          <div className="col-span-3 flex flex-col space-y-4 p-4">
+            <h1 className="text-2xl font-bold">@{profile?.username}</h1>
+
+            <div>
+              <p className="text-lg">{profile?.name}</p>
+            </div>
+
+            <div className="flex gap-6">
               <div>
-                <span className="font-semibold">3</span> Post
+                <span className="font-semibold">{profile?.posts_count}</span>{" "}
+                Posts
               </div>
+
               <div>
                 <span className="font-semibold">1,213</span> Followers
               </div>
+
               <div>
                 <span className="font-semibold">1,213</span> Following
               </div>
             </div>
-            <div>Hei</div>
-            <div>
-                <button className="py-2 px-6 bg-gray-200 rounded-lg font-semibold">edit profile</button>
-            </div>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-1 mt-6 rounded-md overflow-hidden">
-        {[1, 2, 3, 4, 5, 6].map((_, index) => (
-          <div
-            key={index}
-            className="group relative aspect-[4/5] overflow-hidden cursor-pointer"
-          >
-            <img
-              src={image}
-              alt=""
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+      {userPosts && userPosts.length > 0 ? (
+        <div className="grid grid-cols-3 gap-1 mt-6 overflow-hidden rounded-md">
+          {userPosts.map((post: any) => (
+            <div
+              key={post.id}
+              onClick={() => {
+                setOpen(true);
+                setDetailPost(post.id);
+              }}
+              className="group relative aspect-[4/5] cursor-pointer overflow-hidden"
+            >
+              <img
+                src={storageUrl(post.image)}
+                alt="post"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
 
-            <Images
-              size={24}
-              className="absolute top-3 right-3 text-white drop-shadow-md"
-            />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                <div className="flex items-center gap-8 font-semibold text-white">
+                  <div className="flex items-center gap-2">
+                    <Heart size={22} fill="currentColor" />
+                    <span>1.2k</span>
+                  </div>
 
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-              <div className="flex items-center gap-8 text-white font-semibold">
-                <div className="flex items-center gap-2">
-                  <Heart size={22} fill="currentColor" />
-                  <span>1.2k</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <MessageCircle size={22} fill="currentColor" />
-                  <span>245</span>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle size={22} fill="currentColor" />
+                    <span>245</span>
+                  </div>
                 </div>
               </div>
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-20 flex flex-col items-center justify-center text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-gray-300">
+            <MessageCircle size={36} className="text-gray-500" />
           </div>
-        ))}
-      </div>
-      <div className="font-light pt-10 text-center pb-10">© 2026 Instagram from Meta</div>
+
+          <h2 className="mt-4 text-2xl font-semibold">No posts yet</h2>
+
+          <p className="mt-2 max-w-sm text-gray-500">
+            {isMyProfile ? "You haven't" : "This user hasn't"} shared any posts
+            yet.
+          </p>
+        </div>
+      )}
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <div className="">
+          <DetaiModal id={detailPost!} />
+        </div>
+      </Modal>
+      <div className="font-light pt-10 text-center pb-10">© 2026 InstaApp</div>
     </div>
   );
 };
