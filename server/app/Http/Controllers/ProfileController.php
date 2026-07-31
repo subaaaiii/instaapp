@@ -22,7 +22,6 @@ class ProfileController extends Controller
         /** @var User $user */
         $user = Auth::user();
 
-        // Hapus foto lama jika ada
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);
         }

@@ -24,9 +24,6 @@ import FullPageLoader from "../components/Loader";
 import { useToggleLike } from "../hooks/Like/useToggleLike";
 
 const Home = () => {
-  // const { data: posts, isPending, isError } = usePosts();
-  // const { data: me } = useMe();
-  // const {data :suggest} = useUsersSuggestion();
   const logout = useLogout();
   const toggleLike = useToggleLike();
 

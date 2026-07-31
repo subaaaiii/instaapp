@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useRegister } from "../hooks/Auth/useRegister";
+import Swal from "sweetalert2";
 
 type ValidationErrors = {
   message: string;
@@ -30,7 +31,19 @@ export default function Register() {
       email,
       password,
       password_confirmation: passwordConfirmation,
-    });
+    }, {
+          onSuccess: () => {
+            Swal.fire({
+              icon: "success",
+              title: "Account created",
+              toast: true,
+              position: "top-end",
+              showConfirmButton: false,
+              timer: 1500,
+              timerProgressBar: true,
+            });
+          },
+        });
   };
 
   return (
@@ -77,12 +90,16 @@ export default function Register() {
                 />
 
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-500">{errors.name[0]}</p>
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.name[0]}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">Email</label>
+                <label className="mb-2 block text-sm font-medium">
+                  Email
+                </label>
 
                 <input
                   type="email"
@@ -94,7 +111,9 @@ export default function Register() {
                 />
 
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-500">{errors.email[0]}</p>
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.email[0]}
+                  </p>
                 )}
               </div>
 
@@ -127,7 +146,9 @@ export default function Register() {
                 <input
                   type="password"
                   value={passwordConfirmation}
-                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  onChange={(e) =>
+                    setPasswordConfirmation(e.target.value)
+                  }
                   className={`w-full rounded-lg border p-2.5 ${
                     errors.password ? "border-red-500" : "border-gray-300"
                   }`}
@@ -136,10 +157,8 @@ export default function Register() {
 
               {register.isError && (
                 <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
-                  {
-                    (register.error as AxiosError<ValidationErrors>).response
-                      ?.data?.message
-                  }
+                  {(register.error as AxiosError<ValidationErrors>).response
+                    ?.data?.message}
                 </div>
               )}
 
