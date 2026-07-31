@@ -67,7 +67,6 @@ export default function DetailModal({ id }: Props) {
     );
   };
 
-  console.log("data post", data);
 
   return (
     <div className="grid grid-cols-9">
@@ -101,7 +100,7 @@ export default function DetailModal({ id }: Props) {
                     <div className="font-bold">{comment.user.username}</div>
                     <div className="text-lg">{comment.content}</div>
                   </div>
-                  {comment.user.id === me?.id && (
+                  {comment.user.id === me?.id || me?.id === data?.user.id  && (
                     <div className="col-span-1 flex flex-col">
                       <button
                         onClick={() => handleDeleteComment(comment.id, data.id)}

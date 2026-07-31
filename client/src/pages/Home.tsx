@@ -38,10 +38,6 @@ const Home = () => {
   const { data: me, isPending: meLoading } = useMe();
   const { data: suggest, isPending: suggestLoading } = useUsersSuggestion();
 
-  useEffect(() => {
-    console.log(posts);
-  }, []);
-  console.log(posts);
   const navigate = useNavigate();
 
   const [openMenu, setOpenMenu] = useState(false);

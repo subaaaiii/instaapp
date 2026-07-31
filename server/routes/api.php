@@ -24,11 +24,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/suggestions', [UserController::class, 'suggestions']);
     Route::get('/users/{username}', [UserController::class, 'show']);
     Route::get('/users/{username}/posts', [UserController::class, 'posts']);
-    Route::apiResource('posts', PostController::class);
+    Route::get('/posts', [PostController::class, 'index']);
+    Route::get('/posts/{post}', [PostController::class, 'show']);
+    
+    Route::post('/posts', [PostController::class, 'store']);
+        
+    Route::put('/posts/{post}', [PostController::class, 'update'])
+        ->middleware('can:update,post'); 
+        
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])
+        ->middleware('can:delete,post'); 
     Route::post('/posts/{post}/like', [LikeController::class, 'toggle']);
     Route::get('/posts/{post}/comments', [CommentController::class, 'index']);
     Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
-    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
+        ->middleware('can:delete,comment');
 });
 
 

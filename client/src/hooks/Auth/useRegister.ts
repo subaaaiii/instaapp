@@ -41,7 +41,6 @@ export const useRegister = () => {
 
     onError: (error:any) => {
       console.error(error);
-      console.log(error.response?.data);
     },
   });
 };

@@ -28,16 +28,13 @@ export const useLogin = () => {
       return data;
     },
 
-    onSuccess: (data) => {
-      console.log("Login berhasil", data);
+    onSuccess: () => {
 
       navigate("/home");
     },
 
     onError: (error:any) => {
       console.error(error);
-      console.log(error.response?.status);
-      console.log(error.response?.data);
     },
   });
 };

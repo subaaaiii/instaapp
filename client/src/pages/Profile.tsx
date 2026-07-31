@@ -79,7 +79,6 @@ const Profile = () => {
   const [open, setOpen] = useState(false);
   const [detailPost, setDetailPost] = useState<number | null>(null);
   const { data: userPosts } = useUserPosts(profile?.username);
-  console.log(profile);
   return (
     <div className="max-w-5xl mx-auto ">
       <div className="md:px-30">
